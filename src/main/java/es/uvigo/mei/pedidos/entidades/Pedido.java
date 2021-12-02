@@ -36,7 +36,7 @@ public class Pedido implements Serializable {
     @ManyToOne
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderBy("numeroLineaPedido asc")
     private List<LineaPedido> lineas = new ArrayList<>();
 

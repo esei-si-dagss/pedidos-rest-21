@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class LineaPedido implements Serializable {
 
@@ -15,6 +17,7 @@ public class LineaPedido implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long numeroLineaPedido;
 
+    @JsonIgnore
     @ManyToOne
     private Pedido pedido;
 

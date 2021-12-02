@@ -26,40 +26,39 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import es.uvigo.mei.pedidos.entidades.Almacen;
 import es.uvigo.mei.pedidos.entidades.Articulo;
-import es.uvigo.mei.pedidos.entidades.Familia;
-import es.uvigo.mei.pedidos.servicios.ArticuloService;
+import es.uvigo.mei.pedidos.entidades.ArticuloAlmacen;
+import es.uvigo.mei.pedidos.servicios.AlmacenService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping(path = "/api/articulos", produces = MediaType.APPLICATION_JSON_VALUE)
-public class ArticuloController {
+@RequestMapping(path = "/api/almacenes", produces = MediaType.APPLICATION_JSON_VALUE)
+public class AlmacenController {
 	@Autowired
-	ArticuloService articuloService;
+	AlmacenService almacenService;
+
 
 	@GetMapping()
-	public ResponseEntity<List<EntityModel<Articulo>>> buscarTodos(
-			@RequestParam(name = "familiaId", required = false) Long familiaId,
-			@RequestParam(name = "descripcion", required = false) String descripcion) {
+	public ResponseEntity<List<EntityModel<Almacen>>> buscarTodos(
+			@RequestParam(name = "localidad", required = false) String localidad) {
 		try {
-			List<Articulo> resultado = new ArrayList<>();
+			List<Almacen> resultado = new ArrayList<>();
 
-			if (familiaId != null) {
-				resultado = articuloService.buscarPorFamilia(familiaId);
-			} else if (descripcion != null) {
-				resultado = articuloService.buscarPorDescripcion(descripcion);
+			if (localidad != null) {
+				resultado = almacenService.buscarPorLocalidad(localidad);
 			} else {
-				resultado = articuloService.buscarTodos();
+				resultado = almacenService.buscarTodos();
 			}
 
 			if (resultado.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 
-			List<EntityModel<Articulo>> resultadoDTO = new ArrayList<>();
-			resultado.forEach(a -> resultadoDTO.add(crearDTOArticulo(a)));
+			List<EntityModel<Almacen>> resultadoDTO = new ArrayList<>();
+			resultado.forEach(a -> resultadoDTO.add(crearDTOAlmacen(a)));
 
 			return new ResponseEntity<>(resultadoDTO, HttpStatus.OK);
 		} catch (Exception e) {
@@ -68,11 +67,11 @@ public class ArticuloController {
 	}
 
 	@GetMapping(path = "{id}")
-	public ResponseEntity<EntityModel<Articulo>> buscarPorId(@PathVariable("id") Long id) {
-		Optional<Articulo> articulo = articuloService.buscarPorId(id);
+	public ResponseEntity<EntityModel<Almacen>> buscarPorId(@PathVariable("id") Long id) {
+		Optional<Almacen> almacen = almacenService.buscarPorId(id);
 
-		if (articulo.isPresent()) {
-			EntityModel<Articulo> dto = crearDTOArticulo(articulo.get());
+		if (almacen.isPresent()) {
+			EntityModel<Almacen> dto = crearDTOAlmacen(almacen.get());
 			return new ResponseEntity<>(dto, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -82,9 +81,9 @@ public class ArticuloController {
 	@DeleteMapping(path = "{id}")
 	public ResponseEntity<HttpStatus> eliminar(@PathVariable("id") Long id) {
 		try {
-			Optional<Articulo> articulo = articuloService.buscarPorId(id);
-			if (articulo.isPresent()) {
-				articuloService.eliminar(articulo.get());
+			Optional<Almacen> almacen = almacenService.buscarPorId(id);
+			if (almacen.isPresent()) {
+				almacenService.eliminar(almacen.get());
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -96,25 +95,32 @@ public class ArticuloController {
 	}
 
 	@PutMapping(path = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<EntityModel<Articulo>> modificar(@PathVariable("id") Long id,
-			@Valid @RequestBody Articulo articulo) {
-		Optional<Articulo> articuloOptional = articuloService.buscarPorId(id);
+	public ResponseEntity<EntityModel<Almacen>> modificar(@PathVariable("id") Long id,
+			@Valid @RequestBody Almacen almacen) {
+		Optional<Almacen> almacenOptional = almacenService.buscarPorId(id);
 
-		if (articuloOptional.isPresent()) {
-			Articulo nuevoArticulo = articuloService.modificar(articulo);
-			EntityModel<Articulo> dto = crearDTOArticulo(nuevoArticulo);
+		if (almacenOptional.isPresent()) {
+			Almacen nuevoAlmacen = almacenService.modificar(almacen);
+			EntityModel<Almacen> dto = crearDTOAlmacen(nuevoAlmacen);
 			return new ResponseEntity<>(dto, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
+	
+	
+	// GET {id}/articulos  (?nombre=)
+	// GET {id}/articulos/{id}
+	// PUT {id}/articulos/{id}
+	// DELETE {id}/articulos/{id}
+	// POST {id}/articulos/
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<EntityModel<Articulo>> crear(@Valid @RequestBody Articulo articulo) {
+	public ResponseEntity<EntityModel<Almacen>> crear(@Valid @RequestBody Almacen almacen) {
 		try {
-			Articulo nuevoArticulo = articuloService.crear(articulo);
-			EntityModel<Articulo> dto = crearDTOArticulo(nuevoArticulo);
-			URI uri = crearURIArticulo(nuevoArticulo);
+			Almacen nuevoAlmacen = almacenService.crear(almacen);
+			EntityModel<Almacen> dto = crearDTOAlmacen(nuevoAlmacen);
+			URI uri = crearURIAlmacen(nuevoAlmacen);
 
 			return ResponseEntity.created(uri).body(dto);
 		} catch (
@@ -125,24 +131,17 @@ public class ArticuloController {
 	}
 
 	// Crear los DTO con enlaces HATEOAS
-	private EntityModel<Articulo> crearDTOArticulo(Articulo articulo) {
-		Long id = articulo.getId();
-		EntityModel<Articulo> dto = EntityModel.of(articulo);
-		Link linkSelf = linkTo(methodOn(ArticuloController.class).buscarPorId(id)).withSelfRel();
+	private EntityModel<Almacen> crearDTOAlmacen(Almacen almacen) {
+		Long id = almacen.getId();
+		EntityModel<Almacen> dto = EntityModel.of(almacen);
+		Link linkSelf = linkTo(methodOn(AlmacenController.class).buscarPorId(id)).withSelfRel();
 		dto.add(linkSelf);
-
-		if (articulo.getFamilia() != null) {
-			Long idFamilia = articulo.getFamilia().getId();
-			Link linkFamilia = linkTo(methodOn(FamiliaController.class).buscarPorId(idFamilia)).withRel("familia");
-			dto.add(linkFamilia);
-		}
-		
 		return dto;
 	}
 
 	// Construye la URI del nuevo recurso creado con POST
-	private URI crearURIArticulo(Articulo articulo) {
-		return ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(articulo.getId()).toUri();
+	private URI crearURIAlmacen(Almacen almacen) {
+		return ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(almacen.getId()).toUri();
 	}
 
 }

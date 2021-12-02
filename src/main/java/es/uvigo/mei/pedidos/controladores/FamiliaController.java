@@ -91,7 +91,7 @@ public class FamiliaController {
 		}
 	}
 
-	@PutMapping(path = "{dni}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(path = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<EntityModel<Familia>> modificar(@PathVariable("id") Long id,
 			@Valid @RequestBody Familia familia) {
 		Optional<Familia> familiaOptional = articuloService.buscarFamiliaPorId(id);

@@ -26,40 +26,45 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import es.uvigo.mei.pedidos.entidades.Articulo;
-import es.uvigo.mei.pedidos.entidades.Familia;
-import es.uvigo.mei.pedidos.servicios.ArticuloService;
+import es.uvigo.mei.pedidos.entidades.Pedido;
+import es.uvigo.mei.pedidos.entidades.Cliente;
+import es.uvigo.mei.pedidos.entidades.LineaPedido;
+import es.uvigo.mei.pedidos.servicios.PedidoService;
+import es.uvigo.mei.pedidos.servicios.ClienteService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping(path = "/api/articulos", produces = MediaType.APPLICATION_JSON_VALUE)
-public class ArticuloController {
+@RequestMapping(path = "/api/pedidos", produces = MediaType.APPLICATION_JSON_VALUE)
+public class PedidoController {
 	@Autowired
-	ArticuloService articuloService;
+	PedidoService pedidoService;
+
+	@Autowired
+	ClienteService clienteService;
 
 	@GetMapping()
-	public ResponseEntity<List<EntityModel<Articulo>>> buscarTodos(
-			@RequestParam(name = "familiaId", required = false) Long familiaId,
-			@RequestParam(name = "descripcion", required = false) String descripcion) {
+	public ResponseEntity<List<EntityModel<Pedido>>> buscarTodos(
+			@RequestParam(name = "clienteDni", required = false) String clienteDni) {
 		try {
-			List<Articulo> resultado = new ArrayList<>();
+			List<Pedido> resultado = new ArrayList<>();
 
-			if (familiaId != null) {
-				resultado = articuloService.buscarPorFamilia(familiaId);
-			} else if (descripcion != null) {
-				resultado = articuloService.buscarPorDescripcion(descripcion);
+			if (clienteDni != null) {
+				Optional<Cliente> cliente = clienteService.buscarPorDNI(clienteDni);
+				if (cliente.isPresent()) {
+					resultado = pedidoService.buscarPorCliente(cliente.get());
+				}
 			} else {
-				resultado = articuloService.buscarTodos();
+				resultado = pedidoService.buscarTodos();
 			}
 
 			if (resultado.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 
-			List<EntityModel<Articulo>> resultadoDTO = new ArrayList<>();
-			resultado.forEach(a -> resultadoDTO.add(crearDTOArticulo(a)));
+			List<EntityModel<Pedido>> resultadoDTO = new ArrayList<>();
+			resultado.forEach(a -> resultadoDTO.add(crearDTOPedido(a)));
 
 			return new ResponseEntity<>(resultadoDTO, HttpStatus.OK);
 		} catch (Exception e) {
@@ -68,11 +73,11 @@ public class ArticuloController {
 	}
 
 	@GetMapping(path = "{id}")
-	public ResponseEntity<EntityModel<Articulo>> buscarPorId(@PathVariable("id") Long id) {
-		Optional<Articulo> articulo = articuloService.buscarPorId(id);
+	public ResponseEntity<EntityModel<Pedido>> buscarPorId(@PathVariable("id") Long id) {
+		Pedido pedido = pedidoService.buscarPorIdConLineas(id);
 
-		if (articulo.isPresent()) {
-			EntityModel<Articulo> dto = crearDTOArticulo(articulo.get());
+		if (pedido != null) {
+			EntityModel<Pedido> dto = crearDTOPedido(pedido);
 			return new ResponseEntity<>(dto, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -82,9 +87,9 @@ public class ArticuloController {
 	@DeleteMapping(path = "{id}")
 	public ResponseEntity<HttpStatus> eliminar(@PathVariable("id") Long id) {
 		try {
-			Optional<Articulo> articulo = articuloService.buscarPorId(id);
-			if (articulo.isPresent()) {
-				articuloService.eliminar(articulo.get());
+			Optional<Pedido> pedido = pedidoService.buscarPorId(id);
+			if (pedido.isPresent()) {
+				pedidoService.eliminar(pedido.get());
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -96,13 +101,13 @@ public class ArticuloController {
 	}
 
 	@PutMapping(path = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<EntityModel<Articulo>> modificar(@PathVariable("id") Long id,
-			@Valid @RequestBody Articulo articulo) {
-		Optional<Articulo> articuloOptional = articuloService.buscarPorId(id);
+	public ResponseEntity<EntityModel<Pedido>> modificar(@PathVariable("id") Long id,
+			@Valid @RequestBody Pedido pedido) {
+		Optional<Pedido> pedidoOptional = pedidoService.buscarPorId(id);
 
-		if (articuloOptional.isPresent()) {
-			Articulo nuevoArticulo = articuloService.modificar(articulo);
-			EntityModel<Articulo> dto = crearDTOArticulo(nuevoArticulo);
+		if (pedidoOptional.isPresent()) {
+			Pedido nuevoPedido = pedidoService.modificar(pedido);
+			EntityModel<Pedido> dto = crearDTOPedido(nuevoPedido);
 			return new ResponseEntity<>(dto, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -110,39 +115,42 @@ public class ArticuloController {
 	}
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<EntityModel<Articulo>> crear(@Valid @RequestBody Articulo articulo) {
+	public ResponseEntity<EntityModel<Pedido>> crear(@Valid @RequestBody Pedido pedido) {
 		try {
-			Articulo nuevoArticulo = articuloService.crear(articulo);
-			EntityModel<Articulo> dto = crearDTOArticulo(nuevoArticulo);
-			URI uri = crearURIArticulo(nuevoArticulo);
+			System.out.println("PEIDIDO :  "+pedido);
+			Pedido nuevoPedido = pedidoService.crear(pedido);
+			EntityModel<Pedido> dto = crearDTOPedido(nuevoPedido);
+			URI uri = crearURIPedido(nuevoPedido);
 
 			return ResponseEntity.created(uri).body(dto);
 		} catch (
 
 		Exception e) {
+			System.out.println("Falla PEIDIDO con  "+e.toString());
+			
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	// Crear los DTO con enlaces HATEOAS
-	private EntityModel<Articulo> crearDTOArticulo(Articulo articulo) {
-		Long id = articulo.getId();
-		EntityModel<Articulo> dto = EntityModel.of(articulo);
-		Link linkSelf = linkTo(methodOn(ArticuloController.class).buscarPorId(id)).withSelfRel();
+	private EntityModel<Pedido> crearDTOPedido(Pedido pedido) {
+		Long id = pedido.getId();
+		EntityModel<Pedido> dto = EntityModel.of(pedido);
+		Link linkSelf = linkTo(methodOn(PedidoController.class).buscarPorId(id)).withSelfRel();
 		dto.add(linkSelf);
 
-		if (articulo.getFamilia() != null) {
-			Long idFamilia = articulo.getFamilia().getId();
-			Link linkFamilia = linkTo(methodOn(FamiliaController.class).buscarPorId(idFamilia)).withRel("familia");
-			dto.add(linkFamilia);
+		if (pedido.getCliente() != null) {
+			String dni = pedido.getCliente().getDNI();
+			Link linkCliente = linkTo(methodOn(ClienteController.class).buscarPorDNI(dni)).withRel("cliente");
+			dto.add(linkCliente);
 		}
-		
+
 		return dto;
 	}
 
 	// Construye la URI del nuevo recurso creado con POST
-	private URI crearURIArticulo(Articulo articulo) {
-		return ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(articulo.getId()).toUri();
+	private URI crearURIPedido(Pedido pedido) {
+		return ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(pedido.getId()).toUri();
 	}
 
 }

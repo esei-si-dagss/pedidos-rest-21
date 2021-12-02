@@ -17,3 +17,12 @@ Construido sobre proyecto [pedidos-spring-21](https://github.com/esei-si-dagss/p
    * `ClienteController`: API REST para clientes (con anotaciones OAS)
    * `ArticuloController`: API REST para artículos
    * `FamiliaController`: API REST para familias
+   
+## Añadidos (Semana 5, 2/12/2021)
+* En paquete `entidades`: 
+	* Añadido `orphanRemoval=true` en relación `@OneToMany` de `Pedido` hacia `LineaPedido` para que `cascade.MERGE` gestione el borrado de las líneas de pedido
+	* Añadida anotación `@JsonIgnore` en relación `@ManyToOne` de `LineaPedido` haia `Pedido` para evitar ciclos en la serialziación JSON de los pedidos.
+* En paquete `daos : añadido `PedidoDAO`
+* En paquete `services`: añadidos `PedidoService` y `PedidoServiceImpl`
+* En paquete `controllers`: añadidos `PedidoController` (API REST para pedidos) y `AlamacenController` (API REST para almacenes)   
+* Correcciones de erratas
