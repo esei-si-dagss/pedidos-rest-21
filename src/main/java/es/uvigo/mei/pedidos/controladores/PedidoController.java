@@ -117,17 +117,12 @@ public class PedidoController {
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<EntityModel<Pedido>> crear(@Valid @RequestBody Pedido pedido) {
 		try {
-			System.out.println("PEIDIDO :  "+pedido);
 			Pedido nuevoPedido = pedidoService.crear(pedido);
 			EntityModel<Pedido> dto = crearDTOPedido(nuevoPedido);
 			URI uri = crearURIPedido(nuevoPedido);
 
 			return ResponseEntity.created(uri).body(dto);
-		} catch (
-
-		Exception e) {
-			System.out.println("Falla PEIDIDO con  "+e.toString());
-			
+		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
