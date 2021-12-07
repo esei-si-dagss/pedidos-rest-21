@@ -11,6 +11,6 @@ public interface ArticuloDAO extends JpaRepository<Articulo, Long>{
 	public List<Articulo> findArticuloByFamiliaId(Long id);
 	public List<Articulo> findArticuloByNombre(String nombre);
     
-	@Query("SELECT a FROM Articulo a WHERE a.descripcion LIKE %?1")
+	@Query("SELECT a FROM Articulo a WHERE a.descripcion LIKE %?1%")
 	public List<Articulo> findArticuloByPatronDescripcion(String patron);
 }
