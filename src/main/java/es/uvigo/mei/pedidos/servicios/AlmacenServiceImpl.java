@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.uvigo.mei.pedidos.daos.AlmacenDAO;
 import es.uvigo.mei.pedidos.daos.ArticuloAlmacenDAO;
-import es.uvigo.mei.pedidos.daos.ArticuloDAO;
 import es.uvigo.mei.pedidos.entidades.Almacen;
 import es.uvigo.mei.pedidos.entidades.Articulo;
 import es.uvigo.mei.pedidos.entidades.ArticuloAlmacen;
@@ -90,14 +89,14 @@ public class AlmacenServiceImpl implements AlmacenService {
 
 	@Override
 	public void eliminarArticuloAlmacen(Long articuloId, Long almacenId) {
-		ArticuloAlmacen aa = articuloAlmacenDAO.getOne(new ArticuloAlmacenId(articuloId, almacenId));
+		ArticuloAlmacen aa = articuloAlmacenDAO.getById(new ArticuloAlmacenId(articuloId, almacenId));
 		this.eliminarArticuloAlmacen(aa);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ArticuloAlmacen buscarArticuloAlmacenPorArticuloIdAlmacenId(Long articuloId, Long almacenId) {
-		return articuloAlmacenDAO.getOne(new ArticuloAlmacenId(articuloId, almacenId));
+	public Optional<ArticuloAlmacen> buscarArticuloAlmacenPorArticuloIdAlmacenId(Long articuloId, Long almacenId) {
+		return articuloAlmacenDAO.findById(new ArticuloAlmacenId(articuloId, almacenId));
 	}
 
 	@Override
@@ -110,6 +109,11 @@ public class AlmacenServiceImpl implements AlmacenService {
 	@Transactional(readOnly = true)
 	public List<ArticuloAlmacen> buscarArticulosAlmacenPorArticuloId(Long articuloId) {
 		return articuloAlmacenDAO.findByArticuloId(articuloId);
+	}
+
+	@Override
+	public ArticuloAlmacen modificarArticuloAlmacen(ArticuloAlmacen articuloAlmacen) {
+		return articuloAlmacenDAO.save(articuloAlmacen);
 	}
 
 

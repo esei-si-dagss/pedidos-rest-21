@@ -145,7 +145,7 @@ public class ClienteController {
 		}
 	}
 
-	@Operation(summary = "Crear un nuevo ClienteI")
+	@Operation(summary = "Crear un nuevo Cliente")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Cliente actualizado", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Cliente.class)) }),
 			@ApiResponse(responseCode = "400", description = "No se aporta DNI o ya existia un Cliente con ese DNI"),

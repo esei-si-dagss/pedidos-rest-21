@@ -19,9 +19,10 @@ public interface AlmacenService {
 
 	public ArticuloAlmacen crearArticuloAlmacen(ArticuloAlmacen articuloAlmacen);
 	public ArticuloAlmacen crearArticuloAlmacen(Articulo articulo, Almacen almacen, Integer stock);
+	public ArticuloAlmacen modificarArticuloAlmacen(ArticuloAlmacen articuloAlmacen);
 	public void eliminarArticuloAlmacen(ArticuloAlmacen articuloAlmacen);
 	public void eliminarArticuloAlmacen(Long idArticulo, Long idAlmacen);
-	public ArticuloAlmacen buscarArticuloAlmacenPorArticuloIdAlmacenId(Long articuloId, Long almacenId);
+	public Optional<ArticuloAlmacen> buscarArticuloAlmacenPorArticuloIdAlmacenId(Long articuloId, Long almacenId);
 	public List<ArticuloAlmacen> buscarArticulosAlmacenPorAlmacenId(Long almacenId);
 	public List<ArticuloAlmacen> buscarArticulosAlmacenPorArticuloId(Long articuloId);
 }

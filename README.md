@@ -24,5 +24,10 @@ Construido sobre proyecto [pedidos-spring-21](https://github.com/esei-si-dagss/p
 	* Añadida anotación `@JsonIgnore` en relación `@ManyToOne` de `LineaPedido` haia `Pedido` para evitar ciclos en la serialziación JSON de los pedidos.
 * En paquete `daos : añadido `PedidoDAO`
 * En paquete `services`: añadidos `PedidoService` y `PedidoServiceImpl`
-* En paquete `controllers`: añadidos `PedidoController` (API REST para pedidos) y `AlamacenController` (API REST para almacenes)   
+* En paquete `controllers`: añadidos `PedidoController` (API REST para pedidos) y `AlmacenController` (API REST para almacenes)   
 * Correcciones de erratas
+
+## Añadidos (Semana 6, 16/12/02021)
+
+* Correcciones de erratas
+* En paquete `controllers`: ampliado `AlmacenenController` para añadir los _endpoint_ que gestionan los artículos de un `Almacen
